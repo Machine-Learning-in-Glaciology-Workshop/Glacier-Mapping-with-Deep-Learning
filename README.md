@@ -8,4 +8,8 @@ A repository for the teaching materials on deep learning for glacier mapping fro
 
 ## Teaching materials
 
+**TODO**
+
+Note that the datasets and the pretrained models are available only on [Hub](https://hub.jupytearth.org/).
+
 ## Project
