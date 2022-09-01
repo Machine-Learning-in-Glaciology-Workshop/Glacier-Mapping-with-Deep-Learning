@@ -18,10 +18,11 @@ def conv_block(x, n_filters=256, kernel_size=3, dilation_rate=1, batch_norm=True
 
 def DilatedSpatialPyramidPooling(dspp_input):
     dims = dspp_input.shape
-    x = layers.AveragePooling2D(pool_size=(dims[-3], dims[-2]))(dspp_input)
+    x = layers.AveragePooling2D(pool_size=(dims[1], dims[2]))(dspp_input)
     x = conv_block(x, kernel_size=1)
     out_pool = layers.UpSampling2D(
-        size=(dims[-3] // x.shape[1], dims[-2] // x.shape[2]), interpolation="bilinear",
+        size=(dims[1] // x.shape[1], dims[2] // x.shape[2]), 
+        interpolation="bilinear",
     )(x)
 
     out_1 = conv_block(dspp_input, kernel_size=1)
@@ -34,16 +35,27 @@ def DilatedSpatialPyramidPooling(dspp_input):
     return output
 
 
-def deeplab(input_shape, n_classes):
-    inputs = layers.Input(input_shape)
+def deeplab(input_shapes, n_classes):
+    inputs = []
+    for input_name, input_shape in input_shapes.items():
+        input_layer = layers.Input(input_shape, name=input_name)
+        inputs.append(input_layer)
+
+    conv = []
+    for input_layer in inputs:
+        conv_ = conv_block(input_layer, 32)
+        conv.append(conv_)
+    conv = layers.concatenate(conv)
+    dims = conv.shape
+
     resnet50 = applications.ResNet50(
-        weights=None, include_top=False, input_tensor=inputs
+        weights=None, include_top=False, input_tensor=conv
     )
     x = resnet50.get_layer("conv4_block6_2_relu").output
     x = DilatedSpatialPyramidPooling(x)
 
     input_a = layers.UpSampling2D(
-        size=(image_size // 4 // x.shape[1], image_size // 4 // x.shape[2]),
+        size=(dims[1] // 4 // x.shape[1], dims[2] // 4 // x.shape[2]),
         interpolation="bilinear",
     )(x)
 
@@ -54,9 +66,12 @@ def deeplab(input_shape, n_classes):
     x = conv_block(x)
     x = conv_block(x)
     x = layers.UpSampling2D(
-        size=(image_size // x.shape[1], image_size // x.shape[2]),
+        size=(dims[1] // x.shape[1], dims[2] // x.shape[2]),
         interpolation="bilinear",
     )(x)
 
-    model_output = layers.Conv2D(n_classes, kernel_size=1, padding="same")(x)
-    return models.Model(inputs=inputs, outputs=model_output)
+    outputs = layers.Conv2D(n_classes, 1, activation="softmax")(x)
+
+    model = models.Model(inputs=inputs, outputs=outputs)
+    
+    return model

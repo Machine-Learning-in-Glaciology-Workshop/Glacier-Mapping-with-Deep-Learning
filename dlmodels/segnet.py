@@ -5,41 +5,27 @@ from dlmodels.maxunpooling import MaxPoolingWithArgmax2D, MaxUnpooling2D
 
 
 def up_sampling_block(x, indices, n_filters, batch_norm=True):
-    """Upsampling block consisting of two-dimensional max unpooling and a consecutive convolution.
-
-    Args:
-        x (Tensor) - input tensor of shape (None, height, width, n_channels)
-        indices (Tensor) - saved during maxpooling indices of the max intensities 
-        n_filters (int) - number of filters in the convolutional layers
-        batch_norm (bool) - whether to use batch normalization
-    
-    Returns:
-        y (Tensor) - output tensor of shape (None, 2height, 2width, n_filters)
-    """
+    y = conv(n_filters, kernel_size=1, use_bias=False)(x)
     y = MaxUnpooling2D(up_size=(2, 2))([y, indices])
-    y = conv(n_filters)(x)
+    y = conv(n_filters)(y)
     if batch_norm:
         y = layers.BatchNormalization()(y)
     y = layers.LeakyReLU()(y)
     return y
 
 
-def segnet(input_shape, n_classes, batch_norm=True, dropout=0):
-    """Original SegNet model with minor modifications.
-    For more on its basic concepts see https://arxiv.org/abs/1511.00561
+def segnet(input_shapes, n_classes, batch_norm=True, dropout=0):
+    inputs = []
+    for input_name, input_shape in input_shapes.items():
+        input_layer = layers.Input(input_shape, name=input_name)
+        inputs.append(input_layer)
 
-    Args:
-        input_shape (tuple) - shape of the input tensor (height, width, n_channels)
-        n_classes (int) - amount of output classes
-        batch_norm (bool) - whether to use batch normalization
-        dropout (float, 0 <= dropout < 1) - dropout rate, no dropout if dropout = 0
+    conv1 = []
+    for input_layer in inputs:
+        conv1_ = conv_block(input_layer, 32, batch_norm=batch_norm, dropout=dropout)
+        conv1.append(conv1_)
+    conv1 = layers.concatenate(conv1)
 
-    Returns:
-        model (Model) - SegNet model
-    """
-    inputs = layers.Input(input_shape)
-
-    conv1 = conv_block(inputs, 64, batch_norm=batch_norm, dropout=dropout)
     pool1, indices1 = MaxPoolingWithArgmax2D(pool_size=(2, 2))(conv1)
 
     conv2 = conv_block(pool1, 128, batch_norm=batch_norm, dropout=dropout)
@@ -62,10 +48,10 @@ def segnet(input_shape, n_classes, batch_norm=True, dropout=0):
     up3 = up_sampling_block(conv7, indices2, 128)
     conv8 = conv_block(up3, 128, batch_norm=batch_norm, dropout=dropout)
 
-    up4 = up_sampling_block(conv8, indices1, 64)
+    up4 = up_sampling_block(conv8, indices1, len(inputs) * 32)
     conv9 = conv_block(up4, 64, batch_norm=batch_norm, dropout=dropout)
     
-    outputs = layers.Conv2D(n_classes, 1, activation='softmax')(conv9)
+    outputs = layers.Conv2D(n_classes, 1, activation="softmax")(conv9)
 
     model = models.Model(inputs=inputs, outputs=outputs)
     
