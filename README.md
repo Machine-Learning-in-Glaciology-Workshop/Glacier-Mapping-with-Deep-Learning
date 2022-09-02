@@ -14,5 +14,6 @@ Note that the datasets and the pretrained models are available only on [Hub](htt
 
 ## Project
 
+**TODO**
 
 > We will update the materials during the workshop. If you notice any inaccuracies, mistakes or errors, feel free to submit a pull request.
