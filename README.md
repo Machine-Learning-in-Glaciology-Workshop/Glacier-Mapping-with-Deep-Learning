@@ -12,7 +12,7 @@ A repository for the teaching materials on deep learning for glacier mapping fro
 - [Jupyter notebook on random forest for glacier mapping](https://github.com/Machine-Learning-in-Glaciology-Workshop/Glacier-Mapping-with-Deep-Learning/blob/main/random_forest.ipynb)
 - [Jupyter notebook on deep learning for glacier mapping](https://github.com/Machine-Learning-in-Glaciology-Workshop/Glacier-Mapping-with-Deep-Learning/blob/main/deep_learning.ipynb)
 - [Introduction to machine learning slides](#)
-- [Random forest and deep learning for glacier maping slides](https://github.com/Machine-Learning-in-Glaciology-Workshop/Glacier-Mapping-with-Deep-Learning/blob/main/Deep%20Learning%20for%20Glacier%20Mapping.pdf)
+- [Random forest and deep learning for glacier maping slides](https://github.com/Machine-Learning-in-Glaciology-Workshop/Glacier-Mapping-with-Deep-Learning/blob/main/Random_Forest_and_Deep_Learning_for_Glacier_Mapping.pdf)
 
 Alternatively, you can access the materials on [Google Drive](https://drive.google.com/file/d/1JqCdwDY1FccrwvEjAxkKTwrEY45wb19M/view?usp=share_link), it includes large files (e.g. pretrained ResUNet) which we had to omit because of the GitHub limitations. The dataset can be downloaded [here](https://drive.google.com/file/d/1eabr-gV0TXXHxdVR3bwpXeQHl-uMudt5/view?usp=sharing).
 
