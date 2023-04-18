@@ -57,6 +57,10 @@ def mosaic(
                     window = window.where(window != nodata, np.nan)
                 windows.append(window)
             
+            if not windows:
+                col_off += window_size
+                continue
+            
             stack = dask.array.stack(windows)
             median = dask.array.nanmedian(stack, axis=0)
             median.persist(scheduler=scheduler, num_workers=num_workers)
